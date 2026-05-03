@@ -1,0 +1,297 @@
+{
+  "name": "Slack Welcome + Auto Newsletter Bot (Fixed)",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes"
+            }
+          ]
+        }
+      },
+      "id": "07f439c0-b562-47e9-b08d-b42c8798fa57",
+      "name": "Schedule Trigger",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1,
+      "position": [
+        -1040,
+        400
+      ],
+      "notesInFlow": false
+    },
+    {
+      "parameters": {
+        "functionCode": "// Rotate messages with types\nconst content = [\n  { type: \"offer\", message: \"🔥 20% OFF on all services today!\" },\n  { type: \"quote\", message: \"💡 Success is not final, failure is not fatal.\" },\n  { type: \"update\", message: \"🚀 New Feature Released!\" },\n  { type: \"community\", message: \"🎉 Welcome to our growing community!\" }\n];\n\nconst item = content[Math.floor(Math.random() * content.length)];\n\nreturn [{ json: item }];"
+      },
+      "id": "1c0c280f-a313-4b9c-a261-ec399999ef8f",
+      "name": "Rotate Content",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [
+        -848,
+        400
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "image",
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-image-1",
+          "mode": "list",
+          "cachedResultName": "GPT-IMAGE-1"
+        },
+        "prompt": "=Design a modern promotional banner.\n\nMain text to display:\n\"{{$node[\"Rotate Content\"].json[\"message\"]}}\"\n\nStyle:\n- Corporate and clean\n- Blue gradient background\n- Bold, large typography\n- Minimal design\n- Centered text",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 2.3,
+      "position": [
+        -640,
+        400
+      ],
+      "id": "98db84f4-4f25-43e0-91e2-b6e39987cf38",
+      "name": "Generate an image1",
+      "credentials": {
+        "openAiApi": {
+          "id": "ZVMkC0IbzCRmQf20",
+          "name": "OpenAI account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.imgbb.com/1/upload",
+        "sendBody": true,
+        "contentType": "multipart-form-data",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "key",
+              "value": "c088bd8a955a8c1bea678019a0062756"
+            },
+            {
+              "parameterType": "formBinaryData",
+              "name": "image",
+              "inputDataFieldName": "data"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        -432,
+        400
+      ],
+      "id": "c263bdbe-bc02-4938-80f8-11f3c1eb7360",
+      "name": "HTTP Request1"
+    },
+    {
+      "parameters": {
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "#social",
+          "mode": "name"
+        },
+        "text": "={{ $('HTTP Request1').item.json.data.url }}",
+        "otherOptions": {}
+      },
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.4,
+      "position": [
+        -224,
+        400
+      ],
+      "id": "0055a8f1-4406-41ce-b469-8d2b882a48da",
+      "name": "Offer and Updates",
+      "webhookId": "0c27ca2d-42fb-4997-803e-2a9c8304e7d2",
+      "credentials": {
+        "slackApi": {
+          "id": "S3UKXcyZdNsMCSle",
+          "name": "Slack account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "trigger": [
+          "message"
+        ],
+        "watchWorkspace": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.slackTrigger",
+      "typeVersion": 1,
+      "position": [
+        -1040,
+        192
+      ],
+      "id": "bfdef4af-9341-462d-a722-9072c1ea7402",
+      "name": "Slack Trigger",
+      "webhookId": "98b907ee-bdc1-4ce2-834b-678fe00735fe",
+      "credentials": {
+        "slackApi": {
+          "id": "S3UKXcyZdNsMCSle",
+          "name": "Slack account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "482a9dbb-b708-49d5-a5ca-ede757cf0baf",
+              "leftValue": "={{ $json.text.toLowerCase() }}",
+              "rightValue": "hi",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            },
+            {
+              "id": "4681da10-3232-4bd1-b7d6-b86435d5214b",
+              "leftValue": "={{ $json.bot_id }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "empty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -832,
+        192
+      ],
+      "id": "acd0fdd6-a9fd-450d-9d8e-02997c548ee9",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "#social",
+          "mode": "name"
+        },
+        "text": "👋 Welcome to Sureka Designz! Check out our latest offers! 🎉",
+        "otherOptions": {}
+      },
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.4,
+      "position": [
+        -640,
+        128
+      ],
+      "id": "357dcf43-e247-4be7-b39e-0569355cf389",
+      "name": "Send a message",
+      "webhookId": "1976b055-6eeb-4724-afd0-ccc497199fdf",
+      "credentials": {
+        "slackApi": {
+          "id": "S3UKXcyZdNsMCSle",
+          "name": "Slack account 2"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Rotate Content",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Rotate Content": {
+      "main": [
+        [
+          {
+            "node": "Generate an image1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate an image1": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request1": {
+      "main": [
+        [
+          {
+            "node": "Offer and Updates",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Slack Trigger": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "4699b03c-5490-4db4-bfd1-8e75a6f25422",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "8da4011e2ec00d4c9b7d969f878740655d24dc6d07330b30b92dd289a9550e0c"
+  },
+  "id": "pJ4mLhAinitIqhyF",
+  "tags": []
+}
