@@ -1,0 +1,43 @@
+# Slack Welcome + Auto Newsletter Bot
+# Requirements & Dependencies
+
+# Self-Hosted n8n
+n8n >= 1.0.0
+
+# External Services & APIs Required
+Slack API (Bot Token - xoxb-)
+Slack App Scopes:
+  - channels:read
+  - channels:history
+  - chat:write
+
+OpenAI API
+  - Model: DALL-E 3
+  - API Key required
+
+imgbb API
+  - API Key required
+  - Free plan supported
+
+# Infrastructure
+Hostinger VPS or any cloud server
+Node.js >= 18.0.0
+npm >= 8.0.0
+
+# n8n Environment Variables
+N8N_HOST=your-domain.com
+N8N_PORT=5678
+N8N_PROTOCOL=https
+N8N_BASIC_AUTH_ACTIVE=true
+N8N_BASIC_AUTH_USER=your-username
+N8N_BASIC_AUTH_PASSWORD=your-password
+
+# Slack App Configuration
+SLACK_BOT_TOKEN=xoxb-your-token
+SLACK_SIGNING_SECRET=your-signing-secret
+
+# OpenAI Configuration
+OPENAI_API_KEY=your-openai-key
+
+# imgbb Configuration
+IMGBB_API_KEY=your-imgbb-key
